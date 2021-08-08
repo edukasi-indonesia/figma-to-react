@@ -122,6 +122,11 @@ const App: React.VFC = () => {
             Copy to clipboard
           </button>
         </div>
+      <div className={styles.buttonLayout}>
+        <button className={styles.copyButton} onClick={copyToClipboard}>
+          Export component
+        </button>
+      </div>
       </div>
 
       <div className={styles.settings}>

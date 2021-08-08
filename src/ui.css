@@ -73,6 +73,11 @@ input {
   justify-content: center;
 }
 
+.buttonLayout > button {
+  padding: 12px;
+  margin: 10px;
+}
+
 .copyButton {
   border: none;
   padding: 12px 20px;
