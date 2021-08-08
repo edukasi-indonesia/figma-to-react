@@ -25,7 +25,7 @@ export const getFileFromGithub = (fileName: string): Promise<CommitGet | NotFoun
 }
 
 export const commitFileToGithub = (fileName: string, content: string, message: string, sha?: string): Promise<CommitCreated> => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, _) => {
         let res = await superagent.put(`https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/${githubConfig.path}/${fileName}`)
             .accept('application/vnd.github.v3+json')
             .auth(githubConfig.username, githubConfig.token, { type: "basic" })
@@ -38,8 +38,6 @@ export const commitFileToGithub = (fileName: string, content: string, message: s
 
         if (res.statusCode == 201) {
             resolve(res.body as CommitCreated);
-        } else {
-            reject(res.error);
         }
     });
 }
