@@ -6,6 +6,7 @@ import { buildCode } from './buildCode'
 import { buildTagTree } from './buildTagTree'
 import { buildCssString, CssStyle } from './buildCssString'
 import { UserComponentSetting } from './userComponentSetting'
+import { capitalizeFirstLetter } from './utils/stringUtils'
 
 figma.showUI(__html__, { width: 480, height: 480 })
 
@@ -41,8 +42,9 @@ async function generate(node: SceneNode, config: { cssStyle?: CssStyle; unitType
   const tag = await modifyTreeForComponent(originalTagTree, figma)
   const generatedCodeStr = buildCode(tag, cssStyle)
   const cssString = buildCssString(tag, cssStyle)
+  const componentName = capitalizeFirstLetter(tag.name.replace(/\s/g, ''));
 
-  figma.ui.postMessage({ generatedCodeStr, cssString, cssStyle, unitType, userComponentSettings })
+  figma.ui.postMessage({ generatedCodeStr, cssString, cssStyle, componentName, unitType, userComponentSettings })
 }
 
 if (selectedNodes.length > 1) {

@@ -7,6 +7,8 @@ import styles from './ui.css'
 import Spacer from './ui/Spacer'
 import UserComponentSettingList from './ui/UserComponentSettingList'
 import { UserComponentSetting } from './userComponentSetting'
+import { commitFileToGithub, getFileFromGithub, NotFound } from './utils/apiClient'
+import { ComponentData } from './utils/types'
 
 function escapeHtml(str: string) {
   str = str.replace(/&/g, '&amp;')
@@ -54,6 +56,7 @@ const App: React.VFC = () => {
   const [code, setCode] = React.useState('')
   const [selectedCssStyle, setCssStyle] = React.useState<CssStyle>('css')
   const [selectedUnitType, setUnitType] = React.useState<UnitType>('px')
+  const [componentName, setComponentName] = React.useState<string>('')
   const [userComponentSettings, setUserComponentSettings] = React.useState<UserComponentSetting[]>([])
   const textRef = React.useRef<HTMLTextAreaElement>(null)
 
@@ -64,6 +67,32 @@ const App: React.VFC = () => {
 
       const msg: messageTypes = { type: 'notify-copy-success' }
       parent.postMessage(msg, '*')
+    }
+  }
+
+  const exportComponentToGithub = async () => {
+    console.log('Exporting component');
+    
+    let fileName = componentName + '.tsx';
+
+    let body = await getFileFromGithub(fileName);
+
+    if ("message" in body) {
+      let content = Buffer.from(code).toString('base64');
+
+      let message = `Created component ${componentName} from figma designs`;
+
+      console.log(await commitFileToGithub(fileName, content, message));
+
+    } else {
+      let sha = body.sha;
+
+      let content = Buffer.from(code).toString('base64');
+
+      let message = `Updated component ${componentName} from figma designs`;
+
+      console.log(await commitFileToGithub(fileName, content, message, sha));
+
     }
   }
 
@@ -100,11 +129,12 @@ const App: React.VFC = () => {
 
   // set initial values taken from figma storage
   React.useEffect(() => {
-    onmessage = (event) => {
+    onmessage = (event: { data: { pluginMessage: ComponentData } }) => {
       setCssStyle(event.data.pluginMessage.cssStyle)
       setUnitType(event.data.pluginMessage.unitType)
       const codeStr = event.data.pluginMessage.generatedCodeStr + '\n\n' + event.data.pluginMessage.cssString
       setCode(codeStr)
+      setComponentName(event.data.pluginMessage.componentName);
       setUserComponentSettings(event.data.pluginMessage.userComponentSettings)
     }
   }, [])
@@ -122,11 +152,11 @@ const App: React.VFC = () => {
             Copy to clipboard
           </button>
         </div>
-      <div className={styles.buttonLayout}>
-        <button className={styles.copyButton} onClick={copyToClipboard}>
-          Export component
-        </button>
-      </div>
+        <div className={styles.buttonLayout}>
+          <button className={styles.copyButton} onClick={exportComponentToGithub}>
+            Export component
+          </button>
+        </div>
       </div>
 
       <div className={styles.settings}>
